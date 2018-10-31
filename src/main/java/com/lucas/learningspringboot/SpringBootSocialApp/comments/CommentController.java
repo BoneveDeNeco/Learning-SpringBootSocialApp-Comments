@@ -1,41 +1,22 @@
 package com.lucas.learningspringboot.SpringBootSocialApp.comments;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.stream.annotation.EnableBinding;
-import org.springframework.cloud.stream.messaging.Source;
-import org.springframework.cloud.stream.reactive.FluxSender;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
-@Controller
-@EnableBinding(Source.class)
+@RestController
 public class CommentController {
 	
-	private final RabbitTemplate rabbitTemplate;
-	private final MeterRegistry meterRegistry;
-	private final CommentMessageSender sender;
+	private final CommentRepository repository;
 	
-	@Autowired
-	public CommentController(RabbitTemplate rabbitTemplate, MeterRegistry meterRegistry, CommentMessageSender sender) {
-		this.rabbitTemplate = rabbitTemplate;
-		this.meterRegistry = meterRegistry;
-		this.sender = sender;
+	public CommentController(CommentRepository repository) {
+		this.repository = repository;
 	}
-
-	@PostMapping("/comments")
-	public Mono<String> addComment(Mono<Comment> newComment) {
-		return newComment.map(comment -> {
-				sender.send(comment);
-				return comment;
-			})
-			.log("commentController-publish:")
-			.flatMap(comment -> {
-				meterRegistry.counter("comments.produced", "imageId", comment.getImageId()).increment();
-				return Mono.just("redirect:/");
-			});
+	
+	@GetMapping("/comments/{imageId}")
+	public Flux<Comment> comments(@PathVariable String imageId) {
+		return repository.findByImageId(imageId);
 	}
 }

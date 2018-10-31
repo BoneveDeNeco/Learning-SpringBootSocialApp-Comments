@@ -15,10 +15,10 @@ import reactor.core.publisher.Mono;
 @Service
 public class CommentService {
 	
-	CommentWriterRepository repository;
+	CommentRepository repository;
 	MeterRegistry meterRegistry;
 	
-	public CommentService(CommentWriterRepository repository, MeterRegistry meterRegistry) {
+	public CommentService(CommentRepository repository, MeterRegistry meterRegistry) {
 		this.repository = repository;
 		this.meterRegistry = meterRegistry;
 	}

@@ -16,13 +16,13 @@ public class CommentServiceTests {
 	private static final Comment A_COMMENT = new Comment("1", "Image1", "A comment");
 	
 	Flux<Comment> fluxComment;
-	CommentWriterRepository repository;
+	CommentRepository repository;
 	CommentService service;
 	MeterRegistry meterRegistry;
 	@Before
 	public void setup() {
 		fluxComment = Flux.just(A_COMMENT);
-		repository = mock(CommentWriterRepository.class);
+		repository = mock(CommentRepository.class);
 		when(repository.saveAll(any())).thenReturn(fluxComment);
 		
 		meterRegistry = new SimpleMeterRegistry();
