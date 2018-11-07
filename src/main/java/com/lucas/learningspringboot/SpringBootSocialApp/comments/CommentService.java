@@ -1,16 +1,11 @@
 package com.lucas.learningspringboot.SpringBootSocialApp.comments;
 
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+
+import com.esotericsoftware.minlog.Log;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Service
 public class CommentService {
@@ -23,13 +18,14 @@ public class CommentService {
 		this.meterRegistry = meterRegistry;
 	}
 	
-	public Flux<Void> save(Flux<Comment> comments) {
+	public Flux<Comment> save(Flux<Comment> comments) {
 		return repository.saveAll(comments)
 		.log("commentService-save")
-		.flatMap(savedComment -> {
+		.map(savedComment -> {
+			Log.info("Saving comment " + savedComment);
 			meterRegistry.counter("comments.consumed", "imageId", savedComment.getImageId())
 				.increment();
-			return Mono.empty();
+			return savedComment;
 		});
 	}
 }

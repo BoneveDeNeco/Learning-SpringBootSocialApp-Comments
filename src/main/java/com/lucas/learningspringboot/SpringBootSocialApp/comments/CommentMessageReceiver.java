@@ -20,7 +20,7 @@ public class CommentMessageReceiver {
 	
 	@StreamListener
 	@Output(CustomProcessor.OUTPUT)
-	public Flux<Void> save(@Input(CustomProcessor.INPUT) Flux<Comment> newComments) {
+	public Flux<Comment> save(@Input(CustomProcessor.INPUT) Flux<Comment> newComments) {
 		return commentService.save(newComments);
 	}
 }

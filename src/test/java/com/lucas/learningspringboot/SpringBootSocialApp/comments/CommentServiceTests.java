@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 public class CommentServiceTests {
 	private static final Comment A_COMMENT = new Comment("1", "Image1", "A comment");
+	private static final Flux<Comment> A_COMMENT_FLUX = Flux.just(A_COMMENT);
 	
 	Flux<Comment> fluxComment;
 	CommentRepository repository;
@@ -31,18 +32,24 @@ public class CommentServiceTests {
 	
 	@Test
 	public void savesCommentsToCommentRepository() {
-		Flux<Comment> comments = Flux.just(A_COMMENT);
-		service.save(comments);
+		service.save(A_COMMENT_FLUX);
 		
-		verify(repository).saveAll(comments);
+		verify(repository).saveAll(A_COMMENT_FLUX);
 	}
 	
 	@Test
 	public void keepsTrackOfNumberOfCommentsConsumed() {
-		service.save(Flux.just(A_COMMENT)).blockFirst();
+		service.save(A_COMMENT_FLUX).blockFirst();
 		
 		assertThat(meterRegistry.counter("comments.consumed", "imageId", A_COMMENT.getImageId()).count())
 			.isEqualTo(1.0);
 		//meterRegistry.close();
+	}
+	
+	@Test
+	public void returnsFluxOfComments() {
+		Flux<Comment> commentFlux = service.save(A_COMMENT_FLUX);
+		
+		assertThat(commentFlux.blockFirst()).isEqualTo(A_COMMENT);
 	}
 }
