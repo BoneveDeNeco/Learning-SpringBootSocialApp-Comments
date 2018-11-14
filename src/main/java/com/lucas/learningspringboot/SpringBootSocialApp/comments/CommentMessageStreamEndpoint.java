@@ -10,11 +10,11 @@ import reactor.core.publisher.Flux;
 
 @Component
 @EnableBinding(CustomProcessor.class)
-public class CommentMessageReceiver {
+public class CommentMessageStreamEndpoint {
 	
 	private CommentService commentService;
 	
-	public CommentMessageReceiver(CommentService commentService) {
+	public CommentMessageStreamEndpoint(CommentService commentService) {
 		this.commentService = commentService;
 	}
 	

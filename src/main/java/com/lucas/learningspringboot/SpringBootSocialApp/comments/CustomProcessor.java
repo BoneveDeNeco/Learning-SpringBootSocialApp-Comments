@@ -8,7 +8,7 @@ import org.springframework.messaging.SubscribableChannel;
 public interface CustomProcessor {
 	
 	public static final String INPUT = "input";
-	public static final String OUTPUT = "emptyOutput";
+	public static final String OUTPUT = "output";
 	
 	@Input(CustomProcessor.INPUT)
 	SubscribableChannel input();
