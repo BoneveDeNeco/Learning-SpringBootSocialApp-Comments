@@ -3,12 +3,15 @@ package com.lucas.learningspringboot.SpringBootSocialApp.comments;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cloud.stream.test.binder.MessageCollector;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.SubscribableChannel;
@@ -22,7 +25,6 @@ import reactor.core.publisher.Flux;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
 public class CommentMessageStreamEndpointTests {
 	
 	@Autowired
@@ -31,8 +33,11 @@ public class CommentMessageStreamEndpointTests {
 	@Autowired
 	MessageCollector collector;
 	
-	@Autowired
+	@SpyBean
 	CommentService commentService;
+	
+	@Autowired
+	CommentMessageStreamEndpoint endpoint;
 	
 	@Autowired
 	private CompositeMessageConverter converter;
@@ -46,12 +51,13 @@ public class CommentMessageStreamEndpointTests {
 		Mockito.verify(commentService).save(Mockito.any(Flux.class));
 	}
 	
-	//@Test //Not sure if this can work
-	public void broadcastsSavedComment() {
+	@Test
+	public void broadcastsSavedComment() throws InterruptedException {
 		sendComment();
 		
 		BlockingQueue<Message<?>> messages = collector.forChannel(channels.output());
-		Message<?> message = messages.poll();
+		//Must give some time for the framework to send the message. It's asynchronous, after all.
+		Message<?> message = messages.poll(10, TimeUnit.SECONDS); 
 		Comment sentComment = (Comment) converter.fromMessage(message, Comment.class);
 		assertThat(sentComment).isEqualTo(comment);
 	}
